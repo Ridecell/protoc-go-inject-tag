@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"fmt"
 )
 
 var (
@@ -79,7 +80,36 @@ func parseFile(inputPath string) (areas []textArea, err error) {
 }
 
 func writeFile(inputPath string, areas []textArea) (err error) {
-	f, err := os.Open(inputPath)
+	b, err := ioutil.ReadFile(inputPath)
+	if err != nil {
+		panic(err)
+	}
+
+	r, err := regexp.Compile(` json:".*".`)
+	if err != nil {
+		// handle error
+	}
+
+	result := r.ReplaceAll(b, []byte("`"))
+
+	f, err := os.OpenFile(inputPath, os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0777)
+	if err != nil {
+		panic(err)
+	}
+
+	if err = ioutil.WriteFile(inputPath, result, 0644); err != nil {
+		return
+	}
+
+	f.Close()
+
+	//f.WriteString(string(result))
+	//
+	////fmt.Println(string(result))
+	//
+	//f.Close()
+
+	f, err = os.Open(inputPath)
 	if err != nil {
 		return
 	}
@@ -88,6 +118,8 @@ func writeFile(inputPath string, areas []textArea) (err error) {
 	if err != nil {
 		return
 	}
+
+	fmt.Println(string(contents))
 
 	if err = f.Close(); err != nil {
 		return
